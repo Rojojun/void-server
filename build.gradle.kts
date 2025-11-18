@@ -17,9 +17,11 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://repo.spring.io/milestone") }
 }
 
 dependencies {
+    implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-M4"))
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
@@ -27,13 +29,32 @@ dependencies {
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-    implementation("io.r2dbc:r2dbc-postgresql")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    runtimeOnly("org.postgresql:r2dbc-postgresql")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("io.projectreactor:reactor-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    // Kotest
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("io.kotest:kotest-framework-engine:5.9.1")
+    testImplementation("io.kotest:kotest-property:5.9.1")
+    testImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
+
+    // MockK
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+
+    // Coroutines Test
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
+
+    // Spring Test
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+        exclude(module = "mockito-core")
+    }
+    testImplementation("io.projectreactor:reactor-test")
+
+    // Test DB
+    testImplementation("io.r2dbc:r2dbc-h2")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
