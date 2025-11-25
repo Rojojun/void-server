@@ -44,7 +44,7 @@ class CommandHistoryRepositoryAdapterSpec : BehaviorSpec({
             sessionId = sessionId,
             command = "ls -la",
             response = "file1.txt",
-            intent = "LIST_FILES",
+            intent = CommandIntent.LIST_FILES,
             timestamp = timestamp
         )
 
@@ -108,7 +108,7 @@ class CommandHistoryRepositoryAdapterSpec : BehaviorSpec({
             sessionId = sessionId,
             command = "help",
             response = "Available commands",
-            intent = "HELP",
+            intent = CommandIntent.HELP,
             timestamp = timestamp
         )
 

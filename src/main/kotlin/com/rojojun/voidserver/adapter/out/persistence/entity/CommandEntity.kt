@@ -1,5 +1,6 @@
 package com.rojojun.voidserver.adapter.out.persistence.entity
 
+import com.fasterxml.jackson.databind.annotation.EnumNaming
 import com.rojojun.voidserver.domain.model.Command
 import com.rojojun.voidserver.domain.model.CommandIntent
 import org.springframework.data.annotation.Id
@@ -33,7 +34,7 @@ data class CommandEntity(
     val response: String,
 
     @Column("intent")
-    val intent: String? = null,
+    val intent: CommandIntent? = null,
 
     @Column("timestamp")
     val timestamp: Instant = Instant.now()
@@ -46,7 +47,7 @@ data class CommandEntity(
         sessionId = sessionId,
         command = command,
         response = response,
-        intent = intent?.let { CommandIntent.valueOf(it) },
+        intent = intent,
         timestamp = timestamp
     )
 
@@ -59,7 +60,7 @@ data class CommandEntity(
             sessionId = command.sessionId,
             command = command.command,
             response = command.response,
-            intent = command.intent?.name,
+            intent = command.intent,
             timestamp = command.timestamp
         )
     }

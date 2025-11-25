@@ -21,6 +21,7 @@ data class Command(
  */
 enum class CommandIntent {
     LIST_FILES,
+    PWD,
     READ_FILE,
     EXECUTE_SCRIPT,
     KILL_PROCESS,
