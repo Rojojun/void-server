@@ -10,5 +10,8 @@ data class GameState(
 )
 
 enum class EndingType {
-
+    SINGULARITY,
+    HUNTED,
+    SACRIFICE,
+    ARCHITECT
 }
