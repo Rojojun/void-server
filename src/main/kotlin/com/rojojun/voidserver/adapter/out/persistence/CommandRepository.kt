@@ -13,7 +13,7 @@ import java.util.UUID
  * - ReactiveCrudRepository 대신 Coroutine 사용
  */
 @Repository
-interface R2dbcCommandRepository : CoroutineCrudRepository<CommandEntity, Long> {
+interface CommandRepository : CoroutineCrudRepository<CommandEntity, Long> {
 
     /**
      * 세션 ID로 명령어 히스토리 조회

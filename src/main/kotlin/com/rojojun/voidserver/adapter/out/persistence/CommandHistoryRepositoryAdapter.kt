@@ -14,7 +14,7 @@ import java.util.UUID
  */
 @Component
 class CommandHistoryRepositoryAdapter(
-    private val r2dbcRepository: R2dbcCommandRepository
+    private val r2dbcRepository: CommandRepository
 ) : CommandHistoryRepository {
 
     override suspend fun save(command: Command): Command {

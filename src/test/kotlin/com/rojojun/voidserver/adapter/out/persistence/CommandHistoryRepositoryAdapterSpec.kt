@@ -24,7 +24,7 @@ import java.util.UUID
  */
 class CommandHistoryRepositoryAdapterSpec : BehaviorSpec({
 
-    val r2dbcRepository = mockk<R2dbcCommandRepository>()
+    val r2dbcRepository = mockk<CommandRepository>()
     val adapter = CommandHistoryRepositoryAdapter(r2dbcRepository)
 
     Given("도메인 Command가 주어졌을 때") {

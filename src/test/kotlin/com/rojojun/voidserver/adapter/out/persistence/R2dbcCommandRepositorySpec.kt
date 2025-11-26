@@ -24,7 +24,7 @@ import java.util.UUID
 @DataR2dbcTest
 @ActiveProfiles("test")
 class R2dbcCommandRepositorySpec(
-    private val repository: R2dbcCommandRepository
+    private val repository: CommandRepository
 ) : StringSpec() {
 
     override fun extensions() = listOf(SpringExtension)
