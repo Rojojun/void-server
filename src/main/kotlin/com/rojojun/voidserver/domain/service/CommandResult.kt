@@ -58,7 +58,7 @@ data class CommandResult(
     }
 }
 
-fun CommandResult.toCommand(sessionId: UUID, originalCommand: String): Command =
+fun CommandResult.toCommand(sessionId: Long, originalCommand: String): Command =
     Command(
         sessionId = sessionId,
         command = originalCommand,

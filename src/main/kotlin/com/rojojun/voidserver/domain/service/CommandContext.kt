@@ -8,7 +8,7 @@ import java.util.UUID
  * 명령어 실행에 필요한 모든 정보를 담고 있음
  */
 data class CommandContext(
-    val sessionId: UUID,
+    val sessionId: Long,
     val command: String,
     val workingDirectory: String = "/",
     val environment: Map<String, String> = emptyMap(),
@@ -18,7 +18,7 @@ data class CommandContext(
         /**
          * 명령어 문자열을 파싱하여 CommandContext 생성
          */
-        fun parse(sessionId: UUID, commandLine: String, workingDir: String = "/"): CommandContext {
+        fun parse(sessionId: Long, commandLine: String, workingDir: String = "/"): CommandContext {
             val parts = commandLine.trim().split("\\s+".toRegex())
             val command = parts.firstOrNull() ?: ""
             val args = parts.drop(1)

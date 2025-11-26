@@ -18,15 +18,15 @@ interface CommandRepository : CoroutineCrudRepository<CommandEntity, Long> {
     /**
      * 세션 ID로 명령어 히스토리 조회
      */
-    suspend fun findBySessionIdOrderByTimestampDesc(sessionId: UUID): List<CommandEntity>
+    suspend fun findBySessionIdOrderByTimestampDesc(sessionId: Long): List<CommandEntity>
 
     /**
      * 세션 ID로 최근 N개 명령어 조회
      */
-    suspend fun findTop10BySessionIdOrderByTimestampDesc(sessionId: UUID): List<CommandEntity>
+    suspend fun findTop10BySessionIdOrderByTimestampDesc(sessionId: Long): List<CommandEntity>
 
     /**
      * 세션의 명령어 개수
      */
-    suspend fun countBySessionId(sessionId: UUID): Long
+    suspend fun countBySessionId(sessionId: Long): Long
 }
