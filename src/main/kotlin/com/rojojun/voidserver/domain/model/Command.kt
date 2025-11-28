@@ -9,7 +9,7 @@ import java.util.UUID
  */
 data class Command(
     val id: Long? = null,
-    val sessionId: Long,
+    val sessionId: UUID,
     val command: String,
     val response: String,
     val intent: CommandIntent? = null,

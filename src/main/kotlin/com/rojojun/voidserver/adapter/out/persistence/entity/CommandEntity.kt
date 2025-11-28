@@ -25,7 +25,7 @@ data class CommandEntity(
     val id: Long? = null,
 
     @Column("session_id")
-    val sessionId: Long,
+    val sessionId: UUID,
 
     @Column("command")
     val command: String,

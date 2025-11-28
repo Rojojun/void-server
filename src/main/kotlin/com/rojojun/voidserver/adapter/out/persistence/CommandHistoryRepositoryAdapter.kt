@@ -14,31 +14,31 @@ import java.util.UUID
  */
 @Component
 class CommandHistoryRepositoryAdapter(
-    private val r2dbcRepository: CommandRepository
+    private val commandRepository: CommandRepository
 ) : CommandHistoryRepository {
 
     override suspend fun save(command: Command): Command {
         val entity = CommandEntity.from(command)
-        val saved = r2dbcRepository.save(entity)
+        val saved = commandRepository.save(entity)
         return saved.toDomain()
     }
 
     override suspend fun findById(id: Long): Command? {
-        return r2dbcRepository.findById(id)?.toDomain()
+        return commandRepository.findById(id)?.toDomain()
     }
 
     override suspend fun findBySessionId(sessionId: UUID): List<Command> {
-        return r2dbcRepository.findBySessionIdOrderByTimestampDesc(sessionId)
+        return commandRepository.findBySessionIdOrderByTimestampDesc(sessionId)
             .map { it.toDomain() }
     }
 
     override suspend fun findRecentBySessionId(sessionId: UUID, limit: Int): List<Command> {
-        return r2dbcRepository.findTop10BySessionIdOrderByTimestampDesc(sessionId)
+        return commandRepository.findTop10BySessionIdOrderByTimestampDesc(sessionId)
             .take(limit)
             .map { it.toDomain() }
     }
 
     override suspend fun countBySessionId(sessionId: UUID): Long {
-        return r2dbcRepository.countBySessionId(sessionId)
+        return commandRepository.countBySessionId(sessionId)
     }
 }

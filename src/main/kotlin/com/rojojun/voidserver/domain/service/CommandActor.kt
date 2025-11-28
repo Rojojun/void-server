@@ -11,14 +11,14 @@ import java.util.UUID
 class CommandActor(
     private val strategies: List<CommandStrategy>
 ) {
-    suspend fun execute(sessionId: Long, commandLine: String, workingDirectory: String = "/"): CommandResult =
+    suspend fun execute(sessionId: UUID, commandLine: String, workingDirectory: String = "/"): CommandResult =
         CommandContext.parse(
             sessionId = sessionId,
             commandLine = commandLine,
             workingDir = workingDirectory
         ).run { findStrategy(commandLine).execute(this) }
 
-    suspend fun executeAndBuildCommand(sessionId: Long, commandLine: String, workingDirectory: String = "/"): Command =
+    suspend fun executeAndBuildCommand(sessionId: UUID, commandLine: String, workingDirectory: String = "/"): Command =
         execute(
             sessionId = sessionId,
             commandLine = commandLine,
