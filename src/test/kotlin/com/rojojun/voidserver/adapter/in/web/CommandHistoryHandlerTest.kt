@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.awaitBody
 import org.springframework.web.reactive.function.server.bodyValueAndAwait
+import org.springframework.web.reactive.function.server.queryParamOrNull
 import java.time.Instant
 import java.util.UUID
 
@@ -58,9 +59,7 @@ class CommandHistoryHandlerTest : BehaviorSpec({
             Then("200 OK 응답이 반환된다") {
                 response.statusCode() shouldBe HttpStatus.OK
 
-                And("UseCase가 호출된다") {
-                    coVerify(exactly = 1) { useCase.saveCommand(any()) }
-                }
+                coVerify(exactly = 1) { useCase.saveCommand(any()) }
             }
         }
     }
@@ -86,9 +85,7 @@ class CommandHistoryHandlerTest : BehaviorSpec({
             Then("200 OK와 명령어 데이터가 반환된다") {
                 response.statusCode() shouldBe HttpStatus.OK
 
-                And("UseCase가 호출된다") {
-                    coVerify(exactly = 1) { useCase.getCommandById(commandId) }
-                }
+                coVerify(exactly = 1) { useCase.getCommandById(commandId) }
             }
         }
     }
@@ -139,9 +136,7 @@ class CommandHistoryHandlerTest : BehaviorSpec({
             Then("200 OK와 명령어 목록이 반환된다") {
                 response.statusCode() shouldBe HttpStatus.OK
 
-                And("UseCase가 호출된다") {
-                    coVerify(exactly = 1) { useCase.getSessionHistory(sessionId) }
-                }
+                coVerify(exactly = 1) { useCase.getSessionHistory(sessionId) }
             }
         }
     }
@@ -170,9 +165,7 @@ class CommandHistoryHandlerTest : BehaviorSpec({
             Then("200 OK와 최근 명령어들이 반환된다") {
                 response.statusCode() shouldBe HttpStatus.OK
 
-                And("UseCase가 limit과 함께 호출된다") {
-                    coVerify(exactly = 1) { useCase.getRecentCommands(sessionId, limit) }
-                }
+                coVerify(exactly = 1) { useCase.getRecentCommands(sessionId, limit) }
             }
         }
     }
@@ -192,9 +185,7 @@ class CommandHistoryHandlerTest : BehaviorSpec({
             Then("기본값 10으로 호출된다") {
                 response.statusCode() shouldBe HttpStatus.OK
 
-                And("UseCase가 기본 limit으로 호출된다") {
-                    coVerify(exactly = 1) { useCase.getRecentCommands(sessionId, defaultLimit) }
-                }
+                coVerify(exactly = 1) { useCase.getRecentCommands(sessionId, defaultLimit) }
             }
         }
     }
@@ -224,9 +215,7 @@ class CommandHistoryHandlerTest : BehaviorSpec({
             Then("200 OK와 검색 결과가 반환된다") {
                 response.statusCode() shouldBe HttpStatus.OK
 
-                And("UseCase가 keyword와 함께 호출된다") {
-                    coVerify(exactly = 1) { useCase.searchCommands(sessionId, keyword) }
-                }
+                coVerify(exactly = 1) { useCase.searchCommands(sessionId, keyword) }
             }
         }
     }
@@ -266,10 +255,8 @@ class CommandHistoryHandlerTest : BehaviorSpec({
             Then("200 OK와 통계 정보가 반환된다") {
                 response.statusCode() shouldBe HttpStatus.OK
 
-                And("UseCase의 두 메서드가 호출된다") {
-                    coVerify(exactly = 1) { useCase.getCommandCount(sessionId) }
-                    coVerify(exactly = 1) { useCase.getRecentCommands(sessionId, 5) }
-                }
+                coVerify(exactly = 1) { useCase.getCommandCount(sessionId) }
+                coVerify(exactly = 1) { useCase.getRecentCommands(sessionId, 5) }
             }
         }
     }
@@ -291,9 +278,7 @@ class CommandHistoryHandlerTest : BehaviorSpec({
             Then("200 OK와 SSE 스트림이 반환된다") {
                 response.statusCode() shouldBe HttpStatus.OK
 
-                And("UseCase가 호출된다") {
-                    coVerify(exactly = 1) { useCase.getSessionHistory(sessionId) }
-                }
+                coVerify(exactly = 1) { useCase.getSessionHistory(sessionId) }
             }
         }
     }

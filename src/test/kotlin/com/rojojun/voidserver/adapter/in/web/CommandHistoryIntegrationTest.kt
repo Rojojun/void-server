@@ -64,13 +64,13 @@ class CommandHistoryIntegrationTest : BehaviorSpec() {
                     response.sessionId shouldBe sessionId.toString()
                     response.command shouldBe "ls -la"
                     response.intent shouldBe "LIST_FILES"
+                }
 
-                    And("DB에 실제로 저장된다") {
-                        val saved = repository.findById(response.id!!)
-                        saved.shouldNotBeNull()
-                        saved.command shouldBe "ls -la"
-                        saved.intent shouldBe CommandIntent.LIST_FILES
-                    }
+                And("DB에 실제로 저장된다") {
+                    val saved = repository.findById(response.id!!)
+                    saved.shouldNotBeNull()
+                    saved.command shouldBe "ls -la"
+                    saved.intent shouldBe CommandIntent.LIST_FILES
                 }
             }
         }
@@ -325,30 +325,29 @@ class CommandHistoryIntegrationTest : BehaviorSpec() {
                         .responseBody!!
 
                     history shouldHaveSize 3
+                }
+                And("각 명령어를 ID로 조회할 수 있고") {
+                    savedIds.forEach { id ->
+                        webTestClient
+                            .get()
+                            .uri("/api/commands/$id")
+                            .exchange()
+                            .expectStatus().isOk
+                    }
 
-                    And("각 명령어를 ID로 조회할 수 있고") {
-                        savedIds.forEach { id ->
-                            webTestClient
-                                .get()
-                                .uri("/api/commands/$id")
-                                .exchange()
-                                .expectStatus().isOk
-                        }
+                    And("통계를 조회할 수 있다") {
+                        val stats = webTestClient
+                            .get()
+                            .uri("/api/commands/session/$sessionId/stats")
+                            .accept(MediaType.APPLICATION_JSON)
+                            .exchange()
+                            .expectStatus().isOk
+                            .expectBody<SessionStatsResponse>()
+                            .returnResult()
+                            .responseBody!!
 
-                        And("통계를 조회할 수 있다") {
-                            val stats = webTestClient
-                                .get()
-                                .uri("/api/commands/session/$sessionId/stats")
-                                .accept(MediaType.APPLICATION_JSON)
-                                .exchange()
-                                .expectStatus().isOk
-                                .expectBody<SessionStatsResponse>()
-                                .returnResult()
-                                .responseBody!!
-
-                            stats.totalCommands shouldBe 3L
-                            stats.recentCommands shouldHaveSize 3
-                        }
+                        stats.totalCommands shouldBe 3L
+                        stats.recentCommands shouldHaveSize 3
                     }
                 }
             }

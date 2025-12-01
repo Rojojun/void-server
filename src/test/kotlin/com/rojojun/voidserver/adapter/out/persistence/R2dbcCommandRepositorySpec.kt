@@ -1,6 +1,7 @@
 package com.rojojun.voidserver.adapter.out.persistence
 
 import com.rojojun.voidserver.adapter.out.persistence.entity.CommandEntity
+import com.rojojun.voidserver.domain.model.CommandIntent
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.collections.shouldHaveSize
@@ -43,7 +44,7 @@ class R2dbcCommandRepositorySpec(
                 sessionId = testSessionId,
                 command = "ls -la",
                 response = "file1.txt\nfile2.txt",
-                intent = "LIST_FILES"
+                intent = CommandIntent.LIST_FILES
             )
 
             // When

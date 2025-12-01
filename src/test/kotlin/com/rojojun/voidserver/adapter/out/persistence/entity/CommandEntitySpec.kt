@@ -77,7 +77,7 @@ class CommandEntitySpec : FunSpec({
             sessionId = sessionId,
             command = "kill 404",
             response = "Process terminated",
-            intent = "KILL_PROCESS",
+            intent = CommandIntent.KILL_PROCESS,
             timestamp = timestamp
         )
 
@@ -184,7 +184,7 @@ class CommandEntitySpec : FunSpec({
             sessionId = UUID.randomUUID(),
             command = "test",
             response = "test response",
-            intent = "HELP",
+            intent = CommandIntent.HELP,
             timestamp = Instant.now()
         )
 
