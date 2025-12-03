@@ -44,4 +44,34 @@ class GameStateServiceTest : BehaviorSpec({
             }
         }
     }
+
+    Given("기존 세션 ID가 주어졌을 때") {
+        val sessionId = 2L
+        val currentState = GameState(
+            id = sessionId,
+            act = 1,
+            logicSealBroken = false,
+            dataSealBroken = false,
+            powerSealBroken = false,
+            endingType = null
+        )
+
+        coEvery { loadGameStatePort.loadSession(sessionId) } returns currentState
+
+        coEvery { saveGameStatePort.saveSession(any()) } answers { firstArg() }
+
+        When("봉인 해제 요청 (updateLogicSeal(broken=true))을 하면") {
+            gameStateService.updateLogicSeal(sessionId, true)
+
+            Then("SaveGameStatePort가 호출된다") {
+                coVerify(exactly = 1) { saveGameStatePort.saveSession(any()) }
+            }
+
+            And("상태는 true로 저장된다") {
+                coVerify(exactly = 1) { saveGameStatePort.saveSession(match { gameState ->
+                    gameState.id == sessionId && gameState.logicSealBroken
+                }) }
+            }
+        }
+    }
 })
