@@ -1,50 +1,75 @@
 package com.rojojun.voidserver.domain.service.strategy.impl
 
 import com.rojojun.voidserver.domain.model.CommandIntent
+import com.rojojun.voidserver.domain.model.GameEvent
+import com.rojojun.voidserver.domain.model.GameEventType
+import com.rojojun.voidserver.domain.model.MessageType
+import com.rojojun.voidserver.domain.model.ResponseMessage
+import com.rojojun.voidserver.domain.port.out.GameEventPort
+import com.rojojun.voidserver.domain.port.out.VirtualFileSystemPort
 import com.rojojun.voidserver.domain.service.CommandContext
 import com.rojojun.voidserver.domain.service.CommandResult
 import com.rojojun.voidserver.domain.service.strategy.CommandStrategy
 import org.springframework.stereotype.Component
-import java.io.File
 
 /**
  * List Files Command Strategy
  *
  * 리눅스 'ls' 명령어 구현
- * 파일 목록 조회
+ * 가상 파일 시스템을 사용하여 파일 목록 조회
  */
 @Component
-class ListFilesCommand : CommandStrategy {
+class ListFilesCommand(
+    private val fileSystem: VirtualFileSystemPort,
+    private val eventPort: GameEventPort
+) : CommandStrategy {
 
     override suspend fun execute(context: CommandContext): CommandResult {
         return try {
             val directory = context.args.firstOrNull() ?: context.workingDirectory
             val path = resolvePath(context.workingDirectory, directory)
-            val file = File(path)
 
-            if (!file.exists()) {
+            // 파일 존재 여부 확인
+            if (!fileSystem.exists(context.sessionId, path)) {
                 return CommandResult.failure("No such file or directory: $directory", exitCode = 2)
             }
 
-            if (!file.isDirectory) {
-                return CommandResult.success(file.name, intent = getIntent())
-            }
-
-            val files = file.listFiles()?.sortedBy { it.name } ?: emptyList()
-
-            // -la 옵션 확인
+            // 옵션 확인
             val isLongFormat = context.args.contains("-l") || context.args.contains("-la")
             val showHidden = context.args.contains("-a") || context.args.contains("-la")
 
-            val filteredFiles = if (showHidden) files else files.filter { !it.name.startsWith(".") }
+            // 파일 목록 조회
+            val files = fileSystem.listFiles(context.sessionId, path, showHidden)
 
-            val output = if (isLongFormat) {
-                formatLongList(filteredFiles)
-            } else {
-                filteredFiles.joinToString("\n") { it.name }
+            if (files.isEmpty()) {
+                return CommandResult.success("", intent = getIntent())
             }
 
-            CommandResult.success(output, intent = getIntent())
+            val output = if (isLongFormat) {
+                formatLongList(files)
+            } else {
+                files.joinToString("\n") { it.name }
+            }
+
+            val messages = mutableListOf(ResponseMessage(MessageType.SYSTEM, output))
+
+            // 이벤트 체크: /secure 디렉토리 접근
+            if (path.contains("/secure") &&
+                !eventPort.hasEventOccurred(context.sessionId, GameEventType.SECURE_DIRECTORY_ACCESSED)) {
+                val event = GameEvent(GameEventType.SECURE_DIRECTORY_ACCESSED)
+                val eventMessages = eventPort.handleEvent(context.sessionId, event)
+                messages.addAll(eventMessages)
+            }
+
+            // 이벤트 체크: 숨겨진 파일 발견
+            if (showHidden && files.any { it.isHidden } &&
+                !eventPort.hasEventOccurred(context.sessionId, GameEventType.HIDDEN_DIRECTORY_FOUND)) {
+                val event = GameEvent(GameEventType.HIDDEN_DIRECTORY_FOUND)
+                val eventMessages = eventPort.handleEvent(context.sessionId, event)
+                messages.addAll(eventMessages)
+            }
+
+            CommandResult.success(messages, intent = getIntent())
         } catch (e: Exception) {
             CommandResult.failure("Error listing files: ${e.message}")
         }
@@ -77,30 +102,17 @@ class ListFilesCommand : CommandStrategy {
         return if (path.startsWith("/")) {
             path
         } else {
-            File(workingDir, path).canonicalPath
+            "$workingDir/$path".replace("//", "/")
         }
     }
 
     /**
      * Long format 출력 생성 (ls -l)
      */
-    private fun formatLongList(files: List<File>): String {
+    private fun formatLongList(files: List<com.rojojun.voidserver.domain.model.VirtualFile>): String {
         return files.joinToString("\n") { file ->
-            val permissions = getPermissions(file)
-            val size = if (file.isDirectory) "DIR" else file.length().toString()
-            val name = file.name
-            "$permissions  $size  $name"
+            val size = if (file.isDirectory) "DIR" else file.size.toString()
+            "${file.permissions}  $size  ${file.name}"
         }
-    }
-
-    /**
-     * 파일 권한 문자열 생성
-     */
-    private fun getPermissions(file: File): String {
-        val type = if (file.isDirectory) "d" else "-"
-        val read = if (file.canRead()) "r" else "-"
-        val write = if (file.canWrite()) "w" else "-"
-        val execute = if (file.canExecute()) "x" else "-"
-        return "$type$read$write$execute------"
     }
 }

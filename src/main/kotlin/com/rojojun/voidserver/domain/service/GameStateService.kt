@@ -20,9 +20,16 @@ class GameStateService(
         val newState = GameState(
             id = id,
             act = 1,
+            // Act 1 초기 상태
+            elaraContacted = false,
+            hiddenDirectoryFound = false,
+            systemLogRead = false,
+            secureDirectoryAccessed = false,
+            // Act 2 초기 상태
             logicSealBroken = false,
             dataSealBroken = false,
             powerSealBroken = false,
+            // Act 3 초기 상태
             endingType = null
         )
         return saveGameStatePort.saveSession(newState)
@@ -48,10 +55,27 @@ class GameStateService(
         updateSession(sessionId) { it.copy(act = act) }
     }
 
+    // Act 1 상태 업데이트
+    suspend fun updateElaraContacted(sessionId: Long, contacted: Boolean) {
+        updateSession(sessionId) { it.copy(elaraContacted = contacted) }
+    }
+
+    suspend fun updateHiddenDirectoryFound(sessionId: Long, found: Boolean) {
+        updateSession(sessionId) { it.copy(hiddenDirectoryFound = found) }
+    }
+
+    suspend fun updateSystemLogRead(sessionId: Long, read: Boolean) {
+        updateSession(sessionId) { it.copy(systemLogRead = read) }
+    }
+
+    suspend fun updateSecureDirectoryAccessed(sessionId: Long, accessed: Boolean) {
+        updateSession(sessionId) { it.copy(secureDirectoryAccessed = accessed) }
+    }
+
     private suspend fun updateSession(sessionId: Long, update: (GameState) -> GameState) {
         val currentState = loadGameStatePort.loadSession(sessionId)
             ?: throw IllegalStateException("Session not found: $sessionId")
-        
+
         val updatedState = update(currentState)
         saveGameStatePort.saveSession(updatedState)
     }

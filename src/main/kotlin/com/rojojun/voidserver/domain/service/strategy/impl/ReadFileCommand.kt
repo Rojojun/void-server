@@ -1,24 +1,28 @@
 package com.rojojun.voidserver.domain.service.strategy.impl
 
 import com.rojojun.voidserver.domain.model.CommandIntent
+import com.rojojun.voidserver.domain.model.GameEvent
+import com.rojojun.voidserver.domain.model.GameEventType
+import com.rojojun.voidserver.domain.model.MessageType
+import com.rojojun.voidserver.domain.model.ResponseMessage
+import com.rojojun.voidserver.domain.port.out.GameEventPort
+import com.rojojun.voidserver.domain.port.out.VirtualFileSystemPort
 import com.rojojun.voidserver.domain.service.CommandContext
 import com.rojojun.voidserver.domain.service.CommandResult
 import com.rojojun.voidserver.domain.service.strategy.CommandStrategy
 import org.springframework.stereotype.Component
-import java.io.File
 
 /**
  * Read File Command Strategy
  *
  * 리눅스 'cat' 명령어 구현
- * 파일 내용 읽기
+ * 가상 파일 시스템을 사용하여 파일 내용 읽기
  */
 @Component
-class ReadFileCommand : CommandStrategy {
-
-    companion object {
-        private const val MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-    }
+class ReadFileCommand(
+    private val fileSystem: VirtualFileSystemPort,
+    private val eventPort: GameEventPort
+) : CommandStrategy {
 
     override suspend fun execute(context: CommandContext): CommandResult {
         if (context.args.isEmpty()) {
@@ -28,29 +32,32 @@ class ReadFileCommand : CommandStrategy {
         return try {
             val filePath = context.args.first()
             val path = resolvePath(context.workingDirectory, filePath)
-            val file = File(path)
 
-            if (!file.exists()) {
+            // 파일 존재 여부 확인
+            if (!fileSystem.exists(context.sessionId, path)) {
                 return CommandResult.failure("No such file: $filePath", exitCode = 1)
             }
 
+            // 파일 읽기
+            val file = fileSystem.readFile(context.sessionId, path)
+                ?: return CommandResult.failure("Cannot read file: $filePath", exitCode = 1)
+
+            // 디렉토리 체크
             if (file.isDirectory) {
                 return CommandResult.failure("$filePath is a directory", exitCode = 1)
             }
 
-            if (!file.canRead()) {
-                return CommandResult.failure("Permission denied: $filePath", exitCode = 1)
+            val messages = mutableListOf(ResponseMessage(MessageType.SYSTEM, file.content))
+
+            // 이벤트 체크: system_log 읽기
+            if (path == "/system_log" &&
+                !eventPort.hasEventOccurred(context.sessionId, GameEventType.SYSTEM_LOG_READ)) {
+                val event = GameEvent(GameEventType.SYSTEM_LOG_READ)
+                val eventMessages = eventPort.handleEvent(context.sessionId, event)
+                messages.addAll(eventMessages)
             }
 
-            if (file.length() > MAX_FILE_SIZE) {
-                return CommandResult.failure(
-                    "File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB): $filePath",
-                    exitCode = 1
-                )
-            }
-
-            val content = file.readText()
-            CommandResult.success(content, intent = getIntent())
+            CommandResult.success(messages, intent = getIntent())
         } catch (e: Exception) {
             CommandResult.failure("Error reading file: ${e.message}")
         }
@@ -74,7 +81,7 @@ class ReadFileCommand : CommandStrategy {
         return if (path.startsWith("/")) {
             path
         } else {
-            File(workingDir, path).canonicalPath
+            "$workingDir/$path".replace("//", "/")
         }
     }
 }
