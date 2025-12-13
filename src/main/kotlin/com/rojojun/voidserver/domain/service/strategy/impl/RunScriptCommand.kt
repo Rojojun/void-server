@@ -70,14 +70,7 @@ class RunScriptCommand(
 
     override fun getIntent(): CommandIntent = CommandIntent.EXECUTE_SCRIPT
 
-    override fun getSupportedCommands(): List<String> = listOf("run", "exec", "./")
-
-    override fun matches(command: String): Boolean {
-        // "run script.sh" 또는 "./script.sh" 형태 매칭
-        return command.startsWith("run ") ||
-                command.startsWith("exec ") ||
-                command.startsWith("./")
-    }
+    override fun getSupportedCommands(): List<String> = listOf("run", "./")
 
     override fun getHelp(): String = """
         run <script>

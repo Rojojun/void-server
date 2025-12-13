@@ -72,9 +72,10 @@ class Act1IntegrationTest(
 
             Then("시스템 로그와 Elara 반응 메시지가 표시된다") {
                 result.isSuccess shouldBe true
-                result.messages.size shouldBe 2
+                result.messages.size shouldBe 3
                 result.messages[0].text shouldContainString "Medical Bay 07"
                 result.messages[1].sender shouldBe "Elara"
+                result.messages[2].sender shouldBe "Elara"
             }
         }
     }
@@ -151,6 +152,7 @@ class Act1IntegrationTest(
                 And("3. cat system_log 실행") {
                     val result3 = commandActor.execute(sessionId, "cat system_log")
                     result3.isSuccess shouldBe true
+                    result3.messages.size shouldBe 3
                     result3.messages.any { it.sender == "Elara" } shouldBe true
 
                     And("4. run connect.sh 실행") {

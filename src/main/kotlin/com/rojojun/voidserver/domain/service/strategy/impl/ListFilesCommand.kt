@@ -26,17 +26,18 @@ class ListFilesCommand(
 
     override suspend fun execute(context: CommandContext): CommandResult {
         return try {
-            val directory = context.args.firstOrNull() ?: context.workingDirectory
+            // 옵션 확인
+            val isLongFormat = context.args.contains("-l") || context.args.contains("-la")
+            val showHidden = context.args.contains("-a") || context.args.contains("-la")
+
+            // 옵션이 아닌 첫 번째 인자를 디렉토리로 사용
+            val directory = context.args.firstOrNull { !it.startsWith("-") } ?: context.workingDirectory
             val path = resolvePath(context.workingDirectory, directory)
 
             // 파일 존재 여부 확인
             if (!fileSystem.exists(context.sessionId, path)) {
                 return CommandResult.failure("No such file or directory: $directory", exitCode = 2)
             }
-
-            // 옵션 확인
-            val isLongFormat = context.args.contains("-l") || context.args.contains("-la")
-            val showHidden = context.args.contains("-a") || context.args.contains("-la")
 
             // 파일 목록 조회
             val files = fileSystem.listFiles(context.sessionId, path, showHidden)

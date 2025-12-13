@@ -16,7 +16,7 @@ class CommandActor(
             sessionId = sessionId,
             commandLine = commandLine,
             workingDir = workingDirectory
-        ).run { findStrategy(commandLine).execute(this) }
+        ).run { findStrategy(this.command).execute(this) }
 
     suspend fun executeAndBuildCommand(sessionId: UUID, commandLine: String, workingDirectory: String = "/"): Command =
         execute(
@@ -43,7 +43,12 @@ class CommandActor(
             }
 
     fun getHelp(command: String? = null): String =
-        if (command != null) findStrategy(command).getHelp() else buildGeneralHelp()
+        if (command != null) {
+            val parsedCommand = command.trim().split("\\s+".toRegex()).firstOrNull() ?: ""
+            findStrategy(parsedCommand).getHelp()
+        } else {
+            buildGeneralHelp()
+        }
 
     private fun findStrategy(commandLine: String): CommandStrategy =
         strategies

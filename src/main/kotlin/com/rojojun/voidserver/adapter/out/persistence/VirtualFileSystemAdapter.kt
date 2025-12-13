@@ -35,7 +35,11 @@ class VirtualFileSystemAdapter : VirtualFileSystemPort {
 
         return files.values
             .filter { file ->
-                val parentPath = file.path.substringBeforeLast("/", "/")
+                val parentPath = if (file.path.lastIndexOf("/") == 0) {
+                    "/"
+                } else {
+                    file.path.substringBeforeLast("/")
+                }
                 parentPath == normalizedPath
             }
             .filter { showHidden || !it.isHidden }
@@ -49,7 +53,20 @@ class VirtualFileSystemAdapter : VirtualFileSystemPort {
 
     override suspend fun exists(sessionId: UUID, path: String): Boolean {
         val files = sessionFileCache[sessionId] ?: return false
-        return files.containsKey(normalizePath(path))
+        val normalizedPath = normalizePath(path)
+
+        if (files.containsKey(normalizedPath)) {
+            return true
+        }
+
+        return files.values.any { file ->
+            val parentPath = if (file.path.lastIndexOf("/") == 0) {
+                "/"
+            } else {
+                file.path.substringBeforeLast("/")
+            }
+            parentPath == normalizedPath
+        }
     }
 
     override suspend fun writeFile(sessionId: UUID, file: VirtualFile) {

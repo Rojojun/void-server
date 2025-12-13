@@ -50,7 +50,7 @@ class ExecuteScriptCommand : CommandStrategy {
 
     override fun getIntent(): CommandIntent = CommandIntent.EXECUTE_SCRIPT
 
-    override fun getSupportedCommands(): List<String> = listOf("exec", "run", "bash", "sh")
+    override fun getSupportedCommands(): List<String> = listOf("exec", "bash", "sh")
 
     override fun getHelp(): String = """
         exec <command> [args...]
